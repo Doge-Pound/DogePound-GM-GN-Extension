@@ -401,10 +401,10 @@ function handleNewTweets() {
         }
       });
    
-//caption button is here
-document.body.appendChild(dropdownMenu);
-dogeMemeBtn.appendChild(dropdownMenu);
-const refreshBtn = document.createElement("button");
+          //caption button is here
+      document.body.appendChild(dropdownMenu);
+        dogeMemeBtn.appendChild(dropdownMenu);
+     const refreshBtn = document.createElement("button");
 refreshBtn.innerHTML = "New Caption";
 refreshBtn.style.backgroundColor = "#FFA5A5";
 refreshBtn.style.color = "white";
@@ -415,52 +415,118 @@ refreshBtn.style.marginRight = "0%";
 refreshBtn.style.borderRadius="20px";
 refreshBtn.classList.add("my-button");
 
+     //caption button is here
+  
+     const GPTBtn = document.createElement("button");
+GPTBtn.innerHTML = "ReplyGPT🐶";
+GPTBtn.style.backgroundColor = "#00acee";
+GPTBtn.style.color = "white";
+GPTBtn.style.fontSize="13px";
+GPTBtn.style.width="100px";
+GPTBtn.style.padding="6px 3px";
+GPTBtn.style.marginRight = "0%";
+GPTBtn.style.borderRadius="20px";
+GPTBtn.classList.add("my-button");
+
+GPTBtn.addEventListener("click", async function() {
+  const tweetTextElement = document.querySelector('[data-testid="tweetText"]');
+  let tweetText = tweetTextElement.innerText;
+
+  // Remove the link
+  const linkRegex = /https?:\/\/\S+/gi;
+  tweetText = tweetText.replace(linkRegex, "");
+
+  const response = await fetch('https://gmapibot.onrender.com/usegpt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      prompt: tweetText.trim()
+    })
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+
+    // Copy data to clipboard and paste it on the tweet area after delay of 2 seconds
+    navigator.clipboard.writeText(data.data).then(() => {
+      setTimeout(() => {
+        const tweetArea = document.querySelector('[data-testid="tweetTextarea_0"]');
+        tweetArea.focus();
+        navigator.clipboard.readText().then((text) => {
+          document.execCommand('insertHTML', false, text);
+        });
+      }, 2000);
+    }).catch((err) => console.error('Failed to copy text: ', err));
+    
+  } else {
+    console.error('Something went wrong');
+  }
+});
+
 // Sample texts to paste
 //bunch of text for captions
 const sampleTexts = [
   "yo morning!",
   "GM frens, let's crush it!🌞",
   "Good morning everyone, happy day!🥰",
+  "Web3 Legends, GM and prosper.✨",
+  "GM degens, enjoy your day!😊",
+  "Twitter fam, GM and thrive.🐦",
+  "GN all, sweet dreams!🌙",
+  "To the GM gang, rise up!🍵",
+  "GM to all the people!🫶",
+  "GM Web3 OGs, innovate on!🔥",
+  "GM Kings & Queens, rule today!😀",
+  "GM fam, happy day ahead.🩵" ,
+  "Goodnight fam, rest well.😴",
+  "To the night owls, GN and prosper!🦉",
+  "GN everyone, see you in the morning.🌄",
+  "Sleep tight, GN and recharge!💤",
+  "Sweet dreams, GN and be blessed.🙏",
   "Gn 🌃🌠",
   "gn 🌜🌟",
 " Gn 🌌💭",
 " GN 🙏🏼💤",
+
+  
 ];
+
 function getRandomText() {
     return sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
 }
 
 refreshBtn.addEventListener("click", function() {
-  const tweetArea = document.querySelector("[data-testid='tweetTextarea_0']");
-  if (tweetArea) {
-    if (tweetArea.textContent.trim() === "") {
+  setTimeout(function() {
+    const tweetArea = document.querySelector("[data-testid='tweetTextarea_0']");
+    if (tweetArea) {
+      // Paste random text into the textarea
       const dataTransfer = new DataTransfer();
       const randomText = getRandomText();
       dataTransfer.setData("text/plain", randomText);
+      
+      const pasteEvent = new ClipboardEvent("paste", { clipboardData: dataTransfer, bubbles: true });
+      tweetArea.dispatchEvent(pasteEvent);
 
-      const clipboardEvent = new ClipboardEvent("paste", { clipboardData: dataTransfer, bubbles: true });
-      tweetArea.dispatchEvent(clipboardEvent);
-      tweetArea.focus();
-
-      // Set cursor at the end of the text
+      // Select all text in the textarea
       const range = document.createRange();
       range.selectNodeContents(tweetArea);
-      range.collapse(false);
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
+      
     } else {
-      console.log("Text already exists in tweet area");
+      console.error("Tweet area not found");
     }
-  } else {
-    console.error("Tweet area not found");
-  }
-});
+  }, 50); // Wait for 5 seconds before executing this code
+});  
 
-toolbar.appendChild(dogeMemeBtn);
-toolbar.appendChild(refreshBtn);
-}
-});
+        toolbar.appendChild(dogeMemeBtn);
+        toolbar.appendChild(refreshBtn);
+        toolbar.appendChild(GPTBtn);
+        }
+    });
 }
 handleNewTweets();
 const observer = new MutationObserver(handleNewTweets);
